@@ -36,6 +36,14 @@ class MedicalRecord extends Model
     ];
 
     /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'id';
+    }
+
+    /**
      * Get the patient who owns the medical record
      */
     public function patient(): BelongsTo

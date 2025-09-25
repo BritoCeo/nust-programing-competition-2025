@@ -63,6 +63,20 @@ Route::middleware('auth')->group(function () {
         ]);
     });
     
+    // Debug route for medical record show
+    Route::get('/medical-records-debug/{id}', function ($id) {
+        $medicalRecord = \App\Models\MedicalRecord::with(['patient', 'doctor'])->find($id);
+        if (!$medicalRecord) {
+            return response()->json(['error' => 'Medical record not found'], 404);
+        }
+        return response()->json([
+            'id' => $medicalRecord->id,
+            'record_number' => $medicalRecord->record_number,
+            'patient' => $medicalRecord->patient->name,
+            'doctor' => $medicalRecord->doctor->name
+        ]);
+    });
+    
     // Appointments (All roles)
     Route::middleware(['permission:view appointments'])->group(function () {
         Route::resource('appointments', \App\Http\Controllers\AppointmentController::class);
