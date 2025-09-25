@@ -122,6 +122,84 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+// Offline API endpoints for PWA functionality
+Route::prefix('offline')->group(function () {
+    // Symptoms API
+    Route::get('/symptoms', function () {
+        return response()->json(\App\Models\Symptom::all());
+    });
+    
+    // Diseases API
+    Route::get('/diseases', function () {
+        return response()->json(\App\Models\Disease::all());
+    });
+    
+    // Drugs API
+    Route::get('/drugs', function () {
+        return response()->json(\App\Models\Drug::all());
+    });
+    
+    // Expert System API
+    Route::post('/expert-system/analyze', function (Request $request) {
+        $symptomIds = $request->input('symptoms', []);
+        $patientId = $request->input('patient_id');
+        $doctorId = $request->input('doctor_id');
+        
+        $expertSystem = new \App\Services\ExpertSystemService();
+        $result = $expertSystem->analyzeMultiDiseaseSymptoms($symptomIds, $patientId, $doctorId);
+        
+        return response()->json($result);
+    });
+    
+    // Offline diagnosis storage
+    Route::post('/diagnoses', function (Request $request) {
+        $diagnosis = \App\Models\Diagnosis::create([
+            'patient_id' => $request->input('patient_id'),
+            'doctor_id' => $request->input('doctor_id'),
+            'symptoms' => $request->input('symptoms', []),
+            'diagnosis' => $request->input('diagnosis'),
+            'confidence_score' => $request->input('confidence_score', 0),
+            'treatment_plan' => $request->input('treatment_plan'),
+            'notes' => $request->input('notes'),
+            'offline' => true,
+        ]);
+        
+        return response()->json($diagnosis);
+    });
+    
+    // Offline appointments
+    Route::post('/appointments', function (Request $request) {
+        $appointment = \App\Models\Appointment::create([
+            'patient_id' => $request->input('patient_id'),
+            'doctor_id' => $request->input('doctor_id'),
+            'appointment_date' => $request->input('appointment_date'),
+            'appointment_time' => $request->input('appointment_time'),
+            'reason' => $request->input('reason'),
+            'status' => 'pending',
+            'offline' => true,
+        ]);
+        
+        return response()->json($appointment);
+    });
+    
+    // Offline medical records
+    Route::post('/medical-records', function (Request $request) {
+        $record = \App\Models\MedicalRecord::create([
+            'patient_id' => $request->input('patient_id'),
+            'doctor_id' => $request->input('doctor_id'),
+            'record_number' => $request->input('record_number'),
+            'chief_complaint' => $request->input('chief_complaint'),
+            'history_of_present_illness' => $request->input('history_of_present_illness'),
+            'physical_examination' => $request->input('physical_examination'),
+            'diagnosis' => $request->input('diagnosis'),
+            'treatment_plan' => $request->input('treatment_plan'),
+            'offline' => true,
+        ]);
+        
+        return response()->json($record);
+    });
+});
+
 // Health check endpoint
 Route::get('/health', function () {
     return response()->json([

@@ -1,60 +1,146 @@
-const CACHE_NAME = 'mesmtf-v1';
+const CACHE_NAME = 'mesmtf-v2';
 const urlsToCache = [
     '/',
     '/css/app.css',
     '/js/app.js',
     '/manifest.json',
-    '/offline.html'
+    '/offline.html',
+    '/medical-records',
+    '/appointments',
+    '/expert-system',
+    '/treatments',
+    '/pharmacy',
+    '/reports'
+];
+
+// API endpoints to cache for offline use
+const API_CACHE_NAME = 'mesmtf-api-v1';
+const apiEndpoints = [
+    '/api/symptoms',
+    '/api/diseases',
+    '/api/drugs',
+    '/api/expert-system/analyze',
+    '/api/medical-records',
+    '/api/appointments'
 ];
 
 // Install event - cache resources
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Opened cache');
+        Promise.all([
+            caches.open(CACHE_NAME).then(cache => {
+                console.log('Caching app resources');
                 return cache.addAll(urlsToCache);
+            }),
+            caches.open(API_CACHE_NAME).then(cache => {
+                console.log('Caching API endpoints');
+                return cache.addAll(apiEndpoints.map(url => new Request(url, {method: 'GET'})));
             })
+        ])
     );
 });
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Return cached version or fetch from network
-                if (response) {
-                    return response;
-                }
-                
-                // Clone the request
-                const fetchRequest = event.request.clone();
-                
-                return fetch(fetchRequest).then(response => {
-                    // Check if valid response
-                    if (!response || response.status !== 200 || response.type !== 'basic') {
-                        return response;
-                    }
-                    
-                    // Clone the response
-                    const responseToCache = response.clone();
-                    
-                    caches.open(CACHE_NAME)
-                        .then(cache => {
-                            cache.put(event.request, responseToCache);
-                        });
-                    
-                    return response;
-                }).catch(() => {
-                    // If network fails, show offline page for navigation requests
-                    if (event.request.destination === 'document') {
-                        return caches.match('/offline.html');
-                    }
-                });
-            })
-    );
+    const request = event.request;
+    const url = new URL(request.url);
+    
+    // Handle API requests
+    if (url.pathname.startsWith('/api/')) {
+        event.respondWith(handleApiRequest(request));
+        return;
+    }
+    
+    // Handle navigation requests
+    if (request.destination === 'document') {
+        event.respondWith(handleNavigationRequest(request));
+        return;
+    }
+    
+    // Handle other requests (CSS, JS, images, etc.)
+    event.respondWith(handleResourceRequest(request));
 });
+
+// Handle API requests with offline support
+async function handleApiRequest(request) {
+    try {
+        // Try network first
+        const networkResponse = await fetch(request);
+        
+        // Cache successful responses
+        if (networkResponse.ok) {
+            const cache = await caches.open(API_CACHE_NAME);
+            cache.put(request, networkResponse.clone());
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        // Network failed, try cache
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        // Return offline API response
+        return new Response(JSON.stringify({
+            error: 'Offline',
+            message: 'This feature is not available offline',
+            offline: true
+        }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+}
+
+// Handle navigation requests
+async function handleNavigationRequest(request) {
+    try {
+        // Try network first
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse.ok) {
+            return networkResponse;
+        }
+    } catch (error) {
+        // Network failed, try cache
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        // Return offline page
+        return caches.match('/offline.html');
+    }
+}
+
+// Handle resource requests (CSS, JS, images)
+async function handleResourceRequest(request) {
+    try {
+        // Try cache first for better performance
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        // Try network
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse.ok) {
+            // Cache successful responses
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, networkResponse.clone());
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        // Both cache and network failed
+        return new Response('Resource not available offline', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' }
+        });
+    }
+}
 
 // Activate event - clean up old caches
 self.addEventListener('activate', event => {

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MESMTF - Offline Features</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .status-offline {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .status-online {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-title {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .page-title h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .page-title p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-icon.diagnosis {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .feature-icon.appointments {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+        
+        .feature-icon.records {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+        
+        .feature-icon.drugs {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .feature-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .feature-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .sync-status {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .sync-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sync-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .sync-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .sync-item-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .sync-item-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .offline-notice {
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .offline-notice h3 {
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+        
+        .offline-notice p {
+            color: #636e72;
+        }
+        
+        @media (max-width: 768px) {
+            .page-title h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">MESMTF</div>
+            <div class="connection-status status-offline" id="connectionStatus">
+                <i class="fas fa-wifi-slash"></i>
+                <span>Offline Mode</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="page-title">
+            <h1>Offline Features</h1>
+            <p>Access essential medical features even without internet connection</p>
+        </div>
+        
+        <div class="offline-notice">
+            <h3><i class="fas fa-info-circle"></i> Offline Mode Active</h3>
+            <p>You're currently offline. Some features may be limited, but your data will sync when you're back online.</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon diagnosis">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h3 class="feature-title">Offline Diagnosis</h3>
+                <p class="feature-description">
+                    Perform basic symptom analysis and get preliminary diagnoses using cached medical data. 
+                    Perfect for emergency situations or remote areas with limited connectivity.
+                </p>
+                <div class="feature-actions">
+                    <button class="btn btn-primary" onclick="openOfflineDiagnosis()">
+                        <i class="fas fa-play"></i> Start Diagnosis
+                    </button>
+                    <button class="btn btn-secondary" onclick="viewDiagnosisHistory()">
+                        <i class="fas fa-history"></i> History
+                    </button>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon appointments">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <h3 class="feature-title">Book Appointments</h3>
+                <p class="feature-description">
+                    Schedule appointments offline. Your bookings will be automatically synced 
+                    when you're back online and confirmed by the medical staff.
+                </p>
+                <div class="feature-actions">
+                    <button class="btn btn-primary" onclick="bookOfflineAppointment()">
+                        <i class="fas fa-plus"></i> Book Appointment
+                    </button>
+                    <button class="btn btn-secondary" onclick="viewOfflineAppointments()">
+                        <i class="fas fa-list"></i> View Bookings
+                    </button>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon records">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <h3 class="feature-title">Medical Records</h3>
+                <p class="feature-description">
+                    Access your cached medical records, view treatment plans, and review 
+                    previous diagnoses. All data is stored locally for offline access.
+                </p>
+                <div class="feature-actions">
+                    <button class="btn btn-primary" onclick="viewOfflineRecords()">
+                        <i class="fas fa-eye"></i> View Records
+                    </button>
+                    <button class="btn btn-secondary" onclick="addOfflineRecord()">
+                        <i class="fas fa-plus"></i> Add Record
+                    </button>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon drugs">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <h3 class="feature-title">Drug Database</h3>
+                <p class="feature-description">
+                    Access comprehensive drug information, dosages, side effects, and 
+                    interactions. Perfect for medication management and patient education.
+                </p>
+                <div class="feature-actions">
+                    <button class="btn btn-primary" onclick="searchDrugs()">
+                        <i class="fas fa-search"></i> Search Drugs
+                    </button>
+                    <button class="btn btn-secondary" onclick="viewDrugCategories()">
+                        <i class="fas fa-th-list"></i> Categories
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sync-status">
+            <h3 class="sync-title">
+                <i class="fas fa-sync-alt"></i>
+                Sync Status
+            </h3>
+            <div class="sync-items">
+                <div class="sync-item">
+                    <div class="sync-item-value" id="pendingAppointments">0</div>
+                    <div class="sync-item-label">Pending Appointments</div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-item-value" id="pendingDiagnoses">0</div>
+                    <div class="sync-item-label">Pending Diagnoses</div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-item-value" id="pendingRecords">0</div>
+                    <div class="sync-item-label">Pending Records</div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-item-value" id="totalOffline">0</div>
+                    <div class="sync-item-label">Total Offline Items</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            if (navigator.onLine) {
+                statusElement.className = 'connection-status status-online';
+                statusElement.innerHTML = '<i class="fas fa-wifi"></i><span>Online</span>';
+            } else {
+                statusElement.className = 'connection-status status-offline';
+                statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline Mode</span>';
+            }
+        }
+        
+        // Update sync status
+        async function updateSyncStatus() {
+            try {
+                // This would integrate with the offline sync system
+                document.getElementById('pendingAppointments').textContent = '0';
+                document.getElementById('pendingDiagnoses').textContent = '0';
+                document.getElementById('pendingRecords').textContent = '0';
+                document.getElementById('totalOffline').textContent = '0';
+            } catch (error) {
+                console.error('Failed to update sync status:', error);
+            }
+        }
+        
+        // Offline diagnosis functions
+        function openOfflineDiagnosis() {
+            alert('Offline Diagnosis would open here.\n\nFeatures:\n• Symptom selection\n• Basic analysis\n• Preliminary diagnosis\n• Treatment recommendations');
+        }
+        
+        function viewDiagnosisHistory() {
+            alert('Diagnosis History would show here.\n\nFeatures:\n• Previous diagnoses\n• Symptom patterns\n• Treatment outcomes');
+        }
+        
+        // Offline appointment functions
+        function bookOfflineAppointment() {
+            alert('Offline Appointment Booking would open here.\n\nFeatures:\n• Date/time selection\n• Patient information\n• Reason for visit\n• Will sync when online');
+        }
+        
+        function viewOfflineAppointments() {
+            alert('Offline Appointments would show here.\n\nFeatures:\n• Pending appointments\n• Booking status\n• Sync status');
+        }
+        
+        // Offline records functions
+        function viewOfflineRecords() {
+            alert('Offline Medical Records would show here.\n\nFeatures:\n• Cached records\n• Treatment history\n• Medication lists');
+        }
+        
+        function addOfflineRecord() {
+            alert('Add Offline Record would open here.\n\nFeatures:\n• New medical record\n• Symptom entry\n• Will sync when online');
+        }
+        
+        // Drug database functions
+        function searchDrugs() {
+            alert('Drug Search would open here.\n\nFeatures:\n• Drug name search\n• Category filtering\n• Dosage information\n• Side effects');
+        }
+        
+        function viewDrugCategories() {
+            alert('Drug Categories would show here.\n\nFeatures:\n• Antimalarial drugs\n• Antibiotics\n• Antidiabetic drugs\n• Mental health medications');
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            updateConnectionStatus();
+            updateSyncStatus();
+            alert('You are back online! Data will sync automatically.');
+        });
+        
+        window.addEventListener('offline', () => {
+            updateConnectionStatus();
+        });
+        
+        // Initial status check
+        updateConnectionStatus();
+        updateSyncStatus();
+        
+        // Check connection every 30 seconds
+        setInterval(updateConnectionStatus, 30000);
+    </script>
+</body>
+</html>
