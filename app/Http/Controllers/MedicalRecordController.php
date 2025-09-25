@@ -130,8 +130,7 @@ class MedicalRecordController extends Controller
      */
     public function show(MedicalRecord $medicalRecord)
     {
-        // Temporarily comment out authorization for testing
-        // $this->authorize('view', $medicalRecord);
+        $this->authorize('view', $medicalRecord);
         
         $medicalRecord->load(['patient', 'doctor', 'treatments']);
         

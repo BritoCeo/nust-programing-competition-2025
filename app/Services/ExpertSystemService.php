@@ -13,16 +13,21 @@ class ExpertSystemService
 {
     /**
      * Analyze symptoms and provide diagnosis recommendations
+     * Enhanced for Table 1 requirements with VSs, Ss, Ws, VWs classification
      */
     public function analyzeSymptoms(array $symptomIds, int $patientId, int $doctorId): array
     {
         $symptoms = Symptom::whereIn('id', $symptomIds)->get();
         $rules = ExpertSystemRule::with('disease')->active()->get();
         
+        // Calculate symptom strength distribution
+        $symptomStrengthDistribution = $this->calculateSymptomStrengthDistribution($symptoms);
+        
         $analysis = [
             'patient_id' => $patientId,
             'doctor_id' => $doctorId,
             'symptoms_analyzed' => $symptoms->pluck('name')->toArray(),
+            'symptom_strength_distribution' => $symptomStrengthDistribution,
             'recommendations' => [],
             'confidence_scores' => [],
             'requires_xray' => false,
@@ -140,6 +145,93 @@ class ExpertSystemService
         }
         
         return false;
+    }
+
+    /**
+     * Calculate symptom strength distribution for Table 1 analysis
+     */
+    private function calculateSymptomStrengthDistribution(Collection $symptoms): array
+    {
+        $distribution = [
+            'very_strong' => 0,
+            'strong' => 0,
+            'weak' => 0,
+            'very_weak' => 0,
+        ];
+
+        foreach ($symptoms as $symptom) {
+            $strength = $symptom->symptom_strength ?? 'weak';
+            $distribution[$strength]++;
+        }
+
+        return $distribution;
+    }
+
+    /**
+     * Get treatment recommendation based on symptom strength
+     */
+    private function getTreatmentRecommendation(array $symptomStrengthDistribution): array
+    {
+        $recommendations = [];
+
+        // Very Strong Signs (VSs) - Requires X-ray + Drug administration
+        if ($symptomStrengthDistribution['very_strong'] > 0) {
+            $recommendations[] = [
+                'type' => 'xray_required',
+                'description' => 'Very Strong Signs detected - Chest X-ray required in addition to drug administration',
+                'urgency' => 'high',
+                'actions' => [
+                    'Schedule chest X-ray immediately',
+                    'Begin drug administration protocol',
+                    'Monitor patient closely',
+                    'Consider hospitalization'
+                ]
+            ];
+        }
+
+        // Strong Signs (Ss) - Drug administration only
+        if ($symptomStrengthDistribution['strong'] > 0) {
+            $recommendations[] = [
+                'type' => 'drug_administration',
+                'description' => 'Strong Signs detected - Drug administration required (no X-ray needed)',
+                'urgency' => 'medium',
+                'actions' => [
+                    'Begin appropriate drug therapy',
+                    'Monitor patient response',
+                    'Schedule follow-up appointment'
+                ]
+            ];
+        }
+
+        // Weak Signs (Ws) - Drug administration only
+        if ($symptomStrengthDistribution['weak'] > 0) {
+            $recommendations[] = [
+                'type' => 'drug_administration',
+                'description' => 'Weak Signs detected - Drug administration required (no X-ray needed)',
+                'urgency' => 'low',
+                'actions' => [
+                    'Begin mild drug therapy',
+                    'Monitor symptoms',
+                    'Provide supportive care'
+                ]
+            ];
+        }
+
+        // Very Weak Signs (VWs) - Drug administration only
+        if ($symptomStrengthDistribution['very_weak'] > 0) {
+            $recommendations[] = [
+                'type' => 'drug_administration',
+                'description' => 'Very Weak Signs detected - Drug administration required (no X-ray needed)',
+                'urgency' => 'low',
+                'actions' => [
+                    'Begin supportive drug therapy',
+                    'Monitor for symptom progression',
+                    'Provide general care'
+                ]
+            ];
+        }
+
+        return $recommendations;
     }
 
     /**
