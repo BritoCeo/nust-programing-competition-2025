@@ -1,208 +1,336 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Appointments') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Header with Actions -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Appointment Management
-                        </h3>
-                        <div class="flex space-x-2">
-                            @can('create appointments')
-                            <a href="{{ route('appointments.create') }}" 
-                               class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Schedule Appointment
-                            </a>
-                            @endcan
-                            <a href="{{ route('appointments.today') }}" 
-                               class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Today's Appointments
-                            </a>
-                            <a href="{{ route('appointments.upcoming') }}" 
-                               class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Upcoming
-                            </a>
-                        </div>
+@section('title', 'Appointments - MESMTF')
+
+@section('content')
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Header Section -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-calendar-check text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Appointments</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Schedule and manage patient appointments</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Search and Filters -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div>
-                            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Search</label>
-                            <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                   placeholder="Search by appointment number, reason, or patient name"
-                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                        </div>
-                        
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                            <select name="status" id="status" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                                <option value="">All Statuses</option>
-                                <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Scheduled</option>
-                                <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                <option value="no_show" {{ request('status') == 'no_show' ? 'selected' : '' }}>No Show</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
-                            <select name="type" id="type" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                                <option value="">All Types</option>
-                                <option value="consultation" {{ request('type') == 'consultation' ? 'selected' : '' }}>Consultation</option>
-                                <option value="follow_up" {{ request('type') == 'follow_up' ? 'selected' : '' }}>Follow Up</option>
-                                <option value="emergency" {{ request('type') == 'emergency' ? 'selected' : '' }}>Emergency</option>
-                                <option value="routine_checkup" {{ request('type') == 'routine_checkup' ? 'selected' : '' }}>Routine Checkup</option>
-                                <option value="specialist" {{ request('type') == 'specialist' ? 'selected' : '' }}>Specialist</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="date_from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">From Date</label>
-                            <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}"
-                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                        </div>
-                        
-                        <div>
-                            <label for="date_to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To Date</label>
-                            <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}"
-                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                        </div>
-                        
-                        <div class="md:col-span-5">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Filter Appointments
-                            </button>
-                            <a href="{{ route('appointments.index') }}" class="ml-2 inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Clear Filters
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Appointments Table -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    @if($appointments->count() > 0)
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Appointment #</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Patient</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Doctor</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date & Time</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    @foreach($appointments as $appointment)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $appointment->appointment_number }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $appointment->patient->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $appointment->doctor->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            <div>
-                                                <div class="font-medium">{{ $appointment->appointment_date->format('M d, Y') }}</div>
-                                                <div class="text-gray-500">{{ $appointment->appointment_time->format('h:i A') }}</div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {{ ucfirst(str_replace('_', ' ', $appointment->type)) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                {{ $appointment->status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' : 
-                                                   ($appointment->status === 'confirmed' ? 'bg-blue-100 text-blue-800' : 
-                                                   ($appointment->status === 'in_progress' ? 'bg-purple-100 text-purple-800' : 
-                                                   ($appointment->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                                   ($appointment->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')))) }}">
-                                                {{ ucfirst(str_replace('_', ' ', $appointment->status)) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
-                                                <a href="{{ route('appointments.show', $appointment) }}" 
-                                                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                    View
-                                                </a>
-                                                @can('edit appointments')
-                                                <a href="{{ route('appointments.edit', $appointment) }}" 
-                                                   class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                                    Edit
-                                                </a>
-                                                @endcan
-                                                @can('cancel appointments')
-                                                @if($appointment->status !== 'cancelled' && $appointment->status !== 'completed')
-                                                <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="inline">
-                                                    @csrf
-                                                    <button type="submit" 
-                                                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                            onclick="return confirm('Are you sure you want to cancel this appointment?')">
-                                                        Cancel
-                                                    </button>
-                                                </form>
-                                                @endif
-                                                @endcan
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <div class="mt-6">
-                            {{ $appointments->links() }}
-                        </div>
-                    @else
-                        <div class="text-center py-12">
-                            <div class="text-gray-500 dark:text-gray-400">
-                                <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No appointments found</h3>
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    Get started by scheduling a new appointment.
-                                </p>
-                                @can('create appointments')
-                                <div class="mt-6">
-                                    <a href="{{ route('appointments.create') }}" 
-                                       class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                        Schedule Appointment
-                                    </a>
-                                </div>
-                                @endcan
-                            </div>
-                        </div>
-                    @endif
+                <div class="flex items-center space-x-3">
+                    <x-button variant="outline" icon="fas fa-calendar-alt" size="sm">
+                        Calendar View
+                    </x-button>
+                    <x-button variant="primary" icon="fas fa-plus" size="sm" onclick="openModal('book-appointment-modal')">
+                        Book Appointment
+                    </x-button>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <x-card class="text-center">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-calendar-day text-blue-600 dark:text-blue-400 text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">12</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Today's Appointments</p>
+            </x-card>
+            
+            <x-card class="text-center">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">8</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Completed</p>
+            </x-card>
+            
+            <x-card class="text-center">
+                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">4</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+            </x-card>
+            
+            <x-card class="text-center">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-calendar-week text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">28</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">This Week</p>
+            </x-card>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Appointments</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" placeholder="Search by patient name, doctor, or appointment ID..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+                    <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>Today</option>
+                        <option>This Week</option>
+                        <option>This Month</option>
+                        <option>Custom Range</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                    <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>All Status</option>
+                        <option>Scheduled</option>
+                        <option>In Progress</option>
+                        <option>Completed</option>
+                        <option>Cancelled</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments List -->
+        <div class="space-y-4">
+            <!-- Appointment 1 -->
+            <x-card hover="true" class="group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-1">
+                                <h3 class="font-semibold text-gray-900 dark:text-white">John Doe</h3>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Scheduled</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span><i class="fas fa-user-md mr-1"></i>Dr. Smith</span>
+                                <span><i class="fas fa-calendar mr-1"></i>Dec 15, 2023</span>
+                                <span><i class="fas fa-clock mr-1"></i>10:00 AM</span>
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>Room 101</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button class="text-gray-600 hover:text-gray-700 text-sm font-medium">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            <i class="fas fa-check mr-1"></i>Start
+                        </button>
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Appointment 2 -->
+            <x-card hover="true" class="group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-1">
+                                <h3 class="font-semibold text-gray-900 dark:text-white">Jane Smith</h3>
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">In Progress</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span><i class="fas fa-user-md mr-1"></i>Dr. Johnson</span>
+                                <span><i class="fas fa-calendar mr-1"></i>Dec 15, 2023</span>
+                                <span><i class="fas fa-clock mr-1"></i>11:30 AM</span>
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>Room 102</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button class="text-gray-600 hover:text-gray-700 text-sm font-medium">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button class="text-red-600 hover:text-red-700 text-sm font-medium">
+                            <i class="fas fa-times mr-1"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Appointment 3 -->
+            <x-card hover="true" class="group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-1">
+                                <h3 class="font-semibold text-gray-900 dark:text-white">Mike Johnson</h3>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Completed</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span><i class="fas fa-user-md mr-1"></i>Dr. Brown</span>
+                                <span><i class="fas fa-calendar mr-1"></i>Dec 14, 2023</span>
+                                <span><i class="fas fa-clock mr-1"></i>2:00 PM</span>
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>Room 103</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button class="text-gray-600 hover:text-gray-700 text-sm font-medium">
+                            <i class="fas fa-file-medical mr-1"></i>Report
+                        </button>
+                        <button class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            <i class="fas fa-redo mr-1"></i>Reschedule
+                        </button>
+                    </div>
+                </div>
+            </x-card>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-8 flex items-center justify-between">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+                Showing 1 to 3 of 12 appointments
+            </div>
+            <div class="flex items-center space-x-2">
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Previous
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg">
+                    1
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    2
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    3
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Book Appointment Modal -->
+<x-modal id="book-appointment-modal" size="lg">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Book New Appointment</h3>
+                <button onclick="closeModal('book-appointment-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="px-6 py-6">
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Patient</label>
+                        <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>Select Patient</option>
+                            <option>John Doe</option>
+                            <option>Jane Smith</option>
+                            <option>Mike Johnson</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Doctor</label>
+                        <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>Select Doctor</option>
+                            <option>Dr. Smith</option>
+                            <option>Dr. Johnson</option>
+                            <option>Dr. Brown</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
+                        <input type="date" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time</label>
+                        <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>Select Time</option>
+                            <option>09:00 AM</option>
+                            <option>10:00 AM</option>
+                            <option>11:00 AM</option>
+                            <option>02:00 PM</option>
+                            <option>03:00 PM</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duration</label>
+                        <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>30 minutes</option>
+                            <option>45 minutes</option>
+                            <option>60 minutes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Room</label>
+                        <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>Select Room</option>
+                            <option>Room 101</option>
+                            <option>Room 102</option>
+                            <option>Room 103</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Visit</label>
+                    <textarea rows="3" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe the reason for the appointment..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="priority" value="low" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Low</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="priority" value="medium" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Medium</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="priority" value="high" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">High</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end space-x-3">
+            <button onclick="closeModal('book-appointment-modal')" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                Cancel
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                Book Appointment
+            </button>
+        </div>
+    </div>
+</x-modal>
+@endsection

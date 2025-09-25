@@ -41,11 +41,11 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
-        <env name="APP_KEY" value="base64:2fl+K+kKqdqe5QTR/5XoZTw0z67YMDu7c2JQeWOKFk="/>
+        <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_DATABASE" value="nust_hackathon"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PASSWORD_BCRYPT_ROUNDS" value="4"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

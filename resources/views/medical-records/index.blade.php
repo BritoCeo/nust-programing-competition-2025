@@ -1,207 +1,315 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                <i class="fas fa-file-medical mr-2"></i>
-                {{ __('Medical Records') }}
-            </h2>
-            <div class="flex items-center space-x-4">
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                    <i class="fas fa-database mr-1"></i>
-                    {{ $medicalRecords->total() }} records
+@extends('layouts.app')
+
+@section('title', 'Medical Records - MESMTF')
+
+@section('content')
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Header Section -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-file-medical text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Medical Records</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Manage patient medical records and history</p>
+                    </div>
                 </div>
-                @can('create medical records')
-                <a href="{{ route('medical-records.create') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-medical-500 to-medical-600 border border-transparent rounded-lg font-semibold text-sm text-white hover:from-medical-600 hover:to-medical-700 focus:outline-none focus:ring-2 focus:ring-medical-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl">
-                    <i class="fas fa-plus mr-2"></i>
-                    New Record
-                </a>
-                @endcan
-            </div>
-        </div>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <x-medical.stats-widget 
-                    title="Total Records" 
-                    :value="$medicalRecords->total()"
-                    icon="fas fa-file-medical"
-                    color="blue"
-                    description="All medical records"
-                />
-                <x-medical.stats-widget 
-                    title="Active Records" 
-                    :value="$medicalRecords->where('status', 'active')->count()"
-                    icon="fas fa-check-circle"
-                    color="green"
-                    description="Currently active"
-                />
-                <x-medical.stats-widget 
-                    title="This Month" 
-                    :value="$medicalRecords->where('created_at', '>=', now()->startOfMonth())->count()"
-                    icon="fas fa-calendar"
-                    color="purple"
-                    description="New this month"
-                />
-                <x-medical.stats-widget 
-                    title="Today" 
-                    :value="$medicalRecords->where('created_at', '>=', today())->count()"
-                    icon="fas fa-clock"
-                    color="indigo"
-                    description="Created today"
-                />
-            </div>
-
-            <!-- Search and Filters -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Search</label>
-                            <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                   placeholder="Search by record number, complaint, or patient name"
-                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                        </div>
-                        
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                            <select name="status" id="status" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                                <option value="">All Statuses</option>
-                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                                <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archived</option>
-                                <option value="deleted" {{ request('status') == 'deleted' ? 'selected' : '' }}>Deleted</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="date_from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">From Date</label>
-                            <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}"
-                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                        </div>
-                        
-                        <div>
-                            <label for="date_to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To Date</label>
-                            <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}"
-                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
-                        </div>
-                        
-                        <div class="md:col-span-4">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Filter Records
-                            </button>
-                            <a href="{{ route('medical-records.index') }}" class="ml-2 inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Clear Filters
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Medical Records Table -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    @if($medicalRecords->count() > 0)
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Record #</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Patient</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Doctor</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Visit Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Chief Complaint</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    @foreach($medicalRecords as $record)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $record->record_number }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $record->patient->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $record->doctor->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $record->visit_date->format('M d, Y') }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                                            <div class="max-w-xs truncate">
-                                                {{ Str::limit($record->chief_complaint, 50) }}
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                {{ $record->status === 'active' ? 'bg-green-100 text-green-800' : 
-                                                   ($record->status === 'archived' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                                {{ ucfirst($record->status) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
-                                                <a href="{{ route('medical-records.show', $record) }}" 
-                                                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                    View
-                                                </a>
-                                                @can('edit medical records')
-                                                <a href="{{ route('medical-records.edit', $record) }}" 
-                                                   class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                                    Edit
-                                                </a>
-                                                @endcan
-                                                @can('delete medical records')
-                                                <form method="POST" action="{{ route('medical-records.destroy', $record) }}" class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" 
-                                                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                            onclick="return confirm('Are you sure you want to delete this medical record?')">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                                @endcan
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <div class="mt-6">
-                            {{ $medicalRecords->links() }}
-                        </div>
-                    @else
-                        <div class="text-center py-12">
-                            <div class="text-gray-500 dark:text-gray-400">
-                                <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No medical records found</h3>
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    Get started by creating a new medical record.
-                                </p>
-                                @can('create medical records')
-                                <div class="mt-6">
-                                    <a href="{{ route('medical-records.create') }}" 
-                                       class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                        Create New Record
-                                    </a>
-                                </div>
-                                @endcan
-                            </div>
-                        </div>
-                    @endif
+                <div class="flex items-center space-x-3">
+                    <x-button variant="outline" icon="fas fa-download" size="sm">
+                        Export
+                    </x-button>
+                    <x-button variant="primary" icon="fas fa-plus" size="sm" onclick="openModal('add-record-modal')">
+                        Add Record
+                    </x-button>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Filters and Search -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Records</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" 
+                               placeholder="Search by patient name, ID, or diagnosis..." 
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Date Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+                    <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>All Time</option>
+                        <option>Today</option>
+                        <option>This Week</option>
+                        <option>This Month</option>
+                        <option>Last 3 Months</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                    <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>All Status</option>
+                        <option>Active</option>
+                        <option>Completed</option>
+                        <option>Pending</option>
+                        <option>Archived</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Records Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <!-- Sample Record 1 -->
+            <x-card hover="true" class="group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">John Doe</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Patient ID: #P001</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Active</span>
+                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Last Visit</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Dec 15, 2023</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Diagnosis</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Malaria</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Doctor</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Dr. Smith</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button class="text-gray-600 hover:text-gray-700 text-sm font-medium">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Updated 2 hours ago
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Sample Record 2 -->
+            <x-card hover="true" class="group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">Jane Smith</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Patient ID: #P002</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Pending</span>
+                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Last Visit</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Dec 14, 2023</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Diagnosis</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Typhoid</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Doctor</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Dr. Johnson</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button class="text-gray-600 hover:text-gray-700 text-sm font-medium">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Updated 1 day ago
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Sample Record 3 -->
+            <x-card hover="true" class="group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">Mike Johnson</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Patient ID: #P003</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Completed</span>
+                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Last Visit</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Dec 13, 2023</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Diagnosis</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Malaria</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Doctor</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Dr. Brown</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button class="text-gray-600 hover:text-gray-700 text-sm font-medium">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Updated 2 days ago
+                    </div>
+                </div>
+            </x-card>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-8 flex items-center justify-between">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+                Showing 1 to 3 of 12 results
+            </div>
+            <div class="flex items-center space-x-2">
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Previous
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg">
+                    1
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    2
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    3
+                </button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Record Modal -->
+<x-modal id="add-record-modal" size="lg">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Medical Record</h3>
+                <button onclick="closeModal('add-record-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="px-6 py-6">
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Patient Name</label>
+                        <input type="text" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Patient ID</label>
+                        <input type="text" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+                        <input type="date" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
+                        <select class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>Select Gender</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medical History</label>
+                    <textarea rows="4" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter medical history..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Symptoms</label>
+                    <textarea rows="3" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe current symptoms..."></textarea>
+                </div>
+            </form>
+        </div>
+        
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end space-x-3">
+            <button onclick="closeModal('add-record-modal')" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                Cancel
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                Add Record
+            </button>
+        </div>
+    </div>
+</x-modal>
+@endsection

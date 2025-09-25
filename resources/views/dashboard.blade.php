@@ -1,37 +1,41 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-heartbeat text-white text-sm"></i>
-                    </div>
-                    <h2 class="font-bold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
-                        {{ $data['title'] ?? 'Dashboard' }}
-                    </h2>
-                </div>
-            </div>
-            <div class="flex items-center space-x-6">
-                <div class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
-                    <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
-                    {{ now()->format('M d, Y') }}
-                </div>
-                <div class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
-                    <i class="fas fa-clock mr-2 text-green-500"></i>
-                    {{ now()->format('h:i A') }}
-                </div>
-                <div class="relative">
-                    <button class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-white text-sm"></i>
+@extends('layouts.app')
+
+@section('title', 'Dashboard - MESMTF')
+
+@section('content')
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Header Section -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-heartbeat text-white text-xl"></i>
                         </div>
-                        <span class="font-medium">{{ Auth::user()->name }}</span>
-                        <i class="fas fa-chevron-down text-xs"></i>
-                    </button>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                                {{ $data['title'] ?? 'Dashboard' }}
+                            </h1>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Welcome back, {{ Auth::user()->name }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
+                        <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
+                        {{ now()->format('M d, Y') }}
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
+                        <i class="fas fa-clock mr-2 text-green-500"></i>
+                        {{ now()->format('h:i A') }}
+                    </div>
                 </div>
             </div>
         </div>
-    </x-slot>
+    </div>
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -288,6 +292,81 @@
                 @endif
             </div>
             @endif
+
+            <!-- Recent Activity Section -->
+            @if(isset($data['recent_activity']) && count($data['recent_activity']) > 0)
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Recent Activity</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            @foreach($data['recent_activity'] as $activity)
+                            <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="w-10 h-10 bg-gradient-to-r from-{{ $activity['color'] }}-500 to-{{ $activity['color'] }}-600 rounded-xl flex items-center justify-center">
+                                    <i class="{{ $activity['icon'] }} text-white text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white">{{ $activity['title'] }}</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $activity['description'] }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ $activity['timestamp']->diffForHumans() }}</span>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Upcoming Appointments Section -->
+            @if(isset($data['upcoming_appointments']) && count($data['upcoming_appointments']) > 0)
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Upcoming Appointments</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            @foreach($data['upcoming_appointments'] as $appointment)
+                            <div class="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl border border-green-200 dark:border-green-700">
+                                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-calendar-check text-white text-lg"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white">
+                                        @if(Auth::user()->hasRole('patient'))
+                                            Dr. {{ $appointment->doctor->name }}
+                                        @else
+                                            {{ $appointment->patient->name }}
+                                        @endif
+                                    </h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $appointment->reason }}</p>
+                                    <div class="flex items-center space-x-4 mt-2">
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                            <i class="fas fa-calendar mr-1"></i>
+                                            {{ $appointment->appointment_date->format('M d, Y') }}
+                                        </span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            {{ $appointment->appointment_time }}
+                                        </span>
+                                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                                            {{ ucfirst($appointment->status) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <a href="{{ route('appointments.show', $appointment) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
-</x-app-layout>
+@endsection
