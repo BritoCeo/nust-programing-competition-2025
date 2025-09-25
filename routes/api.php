@@ -120,6 +120,42 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/mark-read', function () {
         return response()->json(['success' => true]);
     });
+    
+    // Chatbot
+    Route::prefix('chatbot')->group(function () {
+        Route::post('/message', [\App\Http\Controllers\ChatbotController::class, 'processMessage']);
+        Route::get('/suggestions', [\App\Http\Controllers\ChatbotController::class, 'getSuggestions']);
+        Route::get('/capabilities', [\App\Http\Controllers\ChatbotController::class, 'getCapabilities']);
+        Route::get('/history', [\App\Http\Controllers\ChatbotController::class, 'getHistory']);
+        Route::delete('/history', [\App\Http\Controllers\ChatbotController::class, 'clearHistory']);
+    });
+    
+    // Blog
+    Route::prefix('blog')->group(function () {
+        Route::get('/', [\App\Http\Controllers\BlogController::class, 'index']);
+        Route::get('/popular', [\App\Http\Controllers\BlogController::class, 'getPopular']);
+        Route::get('/recent', [\App\Http\Controllers\BlogController::class, 'getRecent']);
+        Route::get('/categories', [\App\Http\Controllers\BlogController::class, 'getCategories']);
+        Route::get('/statistics', [\App\Http\Controllers\BlogController::class, 'getStatistics']);
+        Route::get('/{blogPost}', [\App\Http\Controllers\BlogController::class, 'show']);
+        Route::post('/', [\App\Http\Controllers\BlogController::class, 'store']);
+        Route::put('/{blogPost}', [\App\Http\Controllers\BlogController::class, 'update']);
+        Route::delete('/{blogPost}', [\App\Http\Controllers\BlogController::class, 'destroy']);
+        Route::post('/{blogPost}/comments', [\App\Http\Controllers\BlogController::class, 'addComment']);
+        Route::post('/{blogPost}/like', [\App\Http\Controllers\BlogController::class, 'toggleLike']);
+    });
+    
+    // Analytics
+    Route::prefix('analytics')->group(function () {
+        Route::get('/disease-trends', [\App\Http\Controllers\AnalyticsController::class, 'getDiseaseTrends']);
+        Route::get('/patient-outcomes', [\App\Http\Controllers\AnalyticsController::class, 'getPatientOutcomes']);
+        Route::get('/treatment-effectiveness', [\App\Http\Controllers\AnalyticsController::class, 'getTreatmentEffectiveness']);
+        Route::get('/predictive', [\App\Http\Controllers\AnalyticsController::class, 'getPredictiveAnalytics']);
+        Route::get('/system-statistics', [\App\Http\Controllers\AnalyticsController::class, 'getSystemStatistics']);
+        Route::get('/dashboard', [\App\Http\Controllers\AnalyticsController::class, 'getDashboardAnalytics']);
+        Route::get('/report', [\App\Http\Controllers\AnalyticsController::class, 'getAnalyticsReport']);
+        Route::post('/export', [\App\Http\Controllers\AnalyticsController::class, 'exportAnalytics']);
+    });
 });
 
 // Offline API endpoints for PWA functionality
