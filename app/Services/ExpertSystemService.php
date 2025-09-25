@@ -106,6 +106,43 @@ class ExpertSystemService
     }
 
     /**
+     * Calculate symptom strength score based on VSs, Ss, Ws, VWs classification
+     */
+    private function calculateSymptomStrengthScore(array $symptomIds): array
+    {
+        $symptoms = Symptom::whereIn('id', $symptomIds)->get();
+        $strengthScores = [
+            'very_strong' => 0,
+            'strong' => 0,
+            'weak' => 0,
+            'very_weak' => 0,
+        ];
+
+        foreach ($symptoms as $symptom) {
+            $strength = $symptom->symptom_strength ?? 'weak';
+            $strengthScores[$strength]++;
+        }
+
+        return $strengthScores;
+    }
+
+    /**
+     * Determine if X-ray is required based on symptom strength
+     */
+    private function requiresXrayBasedOnSymptoms(array $symptomIds): bool
+    {
+        $symptoms = Symptom::whereIn('id', $symptomIds)->get();
+        
+        foreach ($symptoms as $symptom) {
+            if ($symptom->symptom_strength === 'very_strong') {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
      * Generate diagnosis recommendation
      */
     private function generateRecommendation(ExpertSystemRule $rule, float $matchScore, Collection $symptoms): array
